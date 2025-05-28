@@ -1,0 +1,46 @@
+services:
+
+  mariadb:
+    image: mariadb:10.8
+    restart: always
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+      - --skip-innodb-read-only-compressed
+    environment:
+      MYSQL_ROOT_PASSWORD: Moomkenwe0909
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    networks:
+      - erpnext-network
+
+  redis:
+    image: redis:alpine
+    restart: always
+    networks:
+      - erpnext-network
+
+  frappe:
+    build: .
+    user: root
+    working_dir: /home/frappe
+    environment:
+      - SHELL=/bin/bash
+    # persist all of /home/frappe between restarts:
+    volumes:
+      - .:/workspace
+      - frappe-data:/home/frappe
+    ports:
+      - "8000:8000"
+      - "9000:9000"
+    networks:
+      - erpnext-network
+
+volumes:
+  mariadb-data:
+  frappe-data:
+
+networks:
+  erpnext-network:
+    driver: bridge

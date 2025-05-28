@@ -1,4 +1,3 @@
-erpnext
 builder
-hrms
+lms
 # Add any other app names here, one per line

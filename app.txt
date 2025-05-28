@@ -1,0 +1,4 @@
+erpnext
+builder
+hrms
+# Add any other app names here, one per line

@@ -21,6 +21,7 @@ USER root
 COPY init.sh /usr/local/bin/init.sh
 COPY apps.txt /home/frappe/apps.txt
 COPY backup.sh /home/frappe/backup.sh
+COPY env.config /home/frappe/env.config
 RUN chmod +x /usr/local/bin/init.sh
 RUN chown frappe:frappe /home/frappe/apps.txt /home/frappe/backup.sh && chmod +x /home/frappe/backup.sh
 

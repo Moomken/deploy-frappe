@@ -22,25 +22,71 @@ if [ ! -d "/home/frappe/frappe-bench/apps/frappe" ]; then
     bench set-config -g redis_queue 'redis://redis:6379' && \
     bench set-config -g redis_socketio 'redis://redis:6379'"
 
-  echo "📦 Fetching apps…"
-  su - frappe -c "cd /home/frappe/frappe-bench && \
-    bench get-app erpnext && \
-    bench get-app builder && \
-    bench get-app hrms"
+  # --- START: Modified App Fetching and Installation ---
+  APPS_FILE_PATH="/home/frappe/apps.txt"
+  FRAPPE_SITE_NAME="erpnext.local" # Or your actual site name if different
+
+  FETCH_CMDS_STRING=""
+  INSTALL_CMDS_STRING=""
+
+  if [ -f "$APPS_FILE_PATH" ]; then
+    echo "🔎 Reading apps to install from $APPS_FILE_PATH..."
+    while IFS= read -r app_name || [ -n "$app_name" ]; do
+      # Remove carriage returns (for files edited on Windows) and leading/trailing whitespace
+      app_name=$(echo "$app_name" | tr -d '\r' | xargs)
+      if [ -n "$app_name" ]; then # Check if app_name is not empty
+        echo "   queuing app '$app_name' for fetching and installation."
+        FETCH_CMDS_STRING="${FETCH_CMDS_STRING}bench get-app ${app_name} && "
+        INSTALL_CMDS_STRING="${INSTALL_CMDS_STRING}bench --site \"${FRAPPE_SITE_NAME}\" install-app ${app_name} && "
+      fi
+    done < "$APPS_FILE_PATH"
+
+    # Remove trailing ' && ' if commands were added
+    if [ -n "$FETCH_CMDS_STRING" ]; then
+      FETCH_CMDS_STRING=${FETCH_CMDS_STRING%% && }
+    fi
+    if [ -n "$INSTALL_CMDS_STRING" ]; then
+      INSTALL_CMDS_STRING=${INSTALL_CMDS_STRING%% && }
+    fi
+  else
+    echo "⚠️ WARNING: Apps file '$APPS_FILE_PATH' not found. No apps will be fetched or installed from it."
+    # Optionally, define default apps if the file is missing:
+    # DEFAULT_APPS=("erpnext" "builder" "hrms") # Example default apps
+    # for app_name_default in "${DEFAULT_APPS[@]}"; do
+    #   FETCH_CMDS_STRING="${FETCH_CMDS_STRING}bench get-app ${app_name_default} && "
+    #   INSTALL_CMDS_STRING="${INSTALL_CMDS_STRING}bench --site \"${FRAPPE_SITE_NAME}\" install-app ${app_name_default} && "
+    # done
+    # # Remove trailing ' && ' if default commands were added
+    # if [ -n "$FETCH_CMDS_STRING" ]; then FETCH_CMDS_STRING=${FETCH_CMDS_STRING%% && }; fi
+    # if [ -n "$INSTALL_CMDS_STRING" ]; then INSTALL_CMDS_STRING=${INSTALL_CMDS_STRING%% && }; fi
+  fi
+
+  if [ -n "$FETCH_CMDS_STRING" ]; then
+    echo "📦 Fetching apps…"
+    su - frappe -c "cd /home/frappe/frappe-bench && $FETCH_CMDS_STRING"
+  else
+    echo "ℹ️ No apps specified to fetch."
+  fi
 
   echo "🌐 Creating site & installing apps…"
-  FRAPPE_SITE_NAME="erpnext.local" # Or your actual site name if different
-  su - frappe -c "cd /home/frappe/frappe-bench && \
-    bench new-site \"$FRAPPE_SITE_NAME\" \
-      --force \
-      --mariadb-root-password=Moomkenwe0909 \
-      --admin-password=admin \
-      --mariadb-user-host-login-scope='%' && \
-    bench --site \"$FRAPPE_SITE_NAME\" install-app erpnext && \
-    bench --site \"$FRAPPE_SITE_NAME\" install-app builder && \
-    bench --site \"$FRAPPE_SITE_NAME\" install-app hrms && \
+  SITE_SETUP_COMMANDS="bench new-site \"$FRAPPE_SITE_NAME\" \
+    --force \
+    --mariadb-root-password=Moomkenwe0909 \
+    --admin-password=admin \
+    --mariadb-user-host-login-scope='%' "
+
+  if [ -n "$INSTALL_CMDS_STRING" ]; then
+    SITE_SETUP_COMMANDS="${SITE_SETUP_COMMANDS} && ${INSTALL_CMDS_STRING}"
+  else
+    echo "ℹ️ No apps specified from $APPS_FILE_PATH to install on the new site."
+  fi
+
+  SITE_SETUP_COMMANDS="${SITE_SETUP_COMMANDS} && \
     bench --site \"$FRAPPE_SITE_NAME\" set-config developer_mode 1 && \
     bench --site \"$FRAPPE_SITE_NAME\" clear-cache"
+
+  su - frappe -c "cd /home/frappe/frappe-bench && $SITE_SETUP_COMMANDS"
+  # --- END: Modified App Fetching and Installation ---
 
   # Set current site for bench commands, ensuring currentsite.txt is created
   su - frappe -c "cd /home/frappe/frappe-bench && bench use \"$FRAPPE_SITE_NAME\""

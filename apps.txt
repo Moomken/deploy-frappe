@@ -1,6 +1,2 @@
-erpnext
 lms
-# Add other apps here, one per line
-# For example:
-# builder
-# hrms
+builder

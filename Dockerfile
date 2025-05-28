@@ -20,5 +20,7 @@ RUN pipx ensurepath && \
 USER root
 COPY init.sh /usr/local/bin/init.sh
 RUN chmod +x /usr/local/bin/init.sh
+COPY backup.sh /home/frappe/backup.sh
+RUN chown frappe:frappe /home/frappe/apps.txt /home/frappe/backup.sh && chmod +x /home/frappe/backup.sh
 
 ENTRYPOINT ["bash", "/usr/local/bin/init.sh"]

@@ -1,5 +1,4 @@
 services:
-
   mariadb:
     image: mariadb:10.8
     restart: always
@@ -9,7 +8,7 @@ services:
       - --skip-character-set-client-handshake
       - --skip-innodb-read-only-compressed
     environment:
-      MYSQL_ROOT_PASSWORD: Moomkenwe0909
+      MYSQL_ROOT_PASSWORD: Moomkenwe0909 # TODO: Change this in production
     volumes:
       - mariadb-data:/var/lib/mysql
     networks:
@@ -23,19 +22,21 @@ services:
 
   frappe:
     build: .
-    user: root
+    user: root # Runs init.sh as root, then bench commands switch to frappe user
     working_dir: /home/frappe
     environment:
       - SHELL=/bin/bash
-    # persist all of /home/frappe between restarts:
     volumes:
-      - .:/workspace
-      - frappe-data:/home/frappe
-    ports:
-      - "8000:8000"
-      - "9000:9000"
+      - .:/workspace # Mount current directory for easy access if needed, optional
+      - frappe-data:/home/frappe # Persists /home/frappe (includes bench and sites)
+    ports: # Make sure FRAPPE_CONTAINER_PORT in .env matches FRAPPE_INTERNAL_PORT in env.config
+      - "${FRAPPE_HOST_PORT:-8000}:${FRAPPE_CONTAINER_PORT:-8000}"
+      - "${SOCKETIO_HOST_PORT:-9000}:${SOCKETIO_CONTAINER_PORT:-9000}" # For socket.io
     networks:
       - erpnext-network
+    depends_on:
+      - mariadb
+      - redis
 
 volumes:
   mariadb-data:

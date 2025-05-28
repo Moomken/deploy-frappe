@@ -1,3 +1,4 @@
 builder
 lms
+payments
 # Add any other app names here, one per line

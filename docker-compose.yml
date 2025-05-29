@@ -27,6 +27,11 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required in .env}
       - FRAPPE_ADMIN_PASSWORD=${FRAPPE_ADMIN_PASSWORD:?FRAPPE_ADMIN_PASSWORD is required in .env}
+      - FRAPPE_SITE_NAME=${FRAPPE_SITE_NAME:?FRAPPE_SITE_NAME is required in .env}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:?AWS_ACCESS_KEY_ID is required in .env}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:?AWS_SECRET_ACCESS_KEY is required in .env}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:?AWS_DEFAULT_REGION is required in .env}
+      - S3_BACKUP_URL=${S3_BACKUP_URL:?S3_BACKUP_URL is required in .env}
       - SHELL=/bin/bash
     volumes:
       - .:/workspace # Mount current directory for easy access if needed, optional

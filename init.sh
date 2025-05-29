@@ -3,6 +3,15 @@ set -e
 # For commands run as root in this script, HOME might be /root.
 # For commands run via su - frappe, frappe's $HOME will be /home/frappe.
 # The path to bench installed by pipx for the frappe user is typically /home/frappe/.local/bin/bench.
+
+# Check for MYSQL_ROOT_PASSWORD from docker-compose environment
+# Check for FRAPPE_ADMIN_PASSWORD from docker-compose environment
+if [ -z "${FRAPPE_ADMIN_PASSWORD}" ]; then
+  echo "❌ ERROR: FRAPPE_ADMIN_PASSWORD environment variable is not set for the frappe container."
+  echo "Please define it in your .env file and ensure it's passed to the frappe service in docker-compose.yml."
+  exit 1
+fi
+
 export PATH="/home/frappe/.local/bin:$PATH"
 
 # --- START: Load configuration from env.config ---
@@ -79,8 +88,8 @@ if [ ! -d "/home/frappe/frappe-bench/apps/frappe" ]; then
   echo "🌐 Creating site '$FRAPPE_SITE_NAME' & installing apps as user 'frappe'..."
   SITE_SETUP_COMMANDS="bench new-site \"$FRAPPE_SITE_NAME\" \
     --force \
-    --mariadb-root-password=Moomkenwe0909 \
-    --admin-password=admin \
+    --mariadb-root-password=${MYSQL_ROOT_PASSWORD} \
+    --admin-password=${FRAPPE_ADMIN_PASSWORD} \
     --mariadb-user-host-login-scope='%' " # TODO: Make passwords configurable
 
   if [ -n "$INSTALL_CMDS_STRING" ]; then

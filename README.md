@@ -1,5 +1,4 @@
-# [Online Documentation](https://frappe.doc.moomken.org/) 
-
+# <a href="https://frappe.doc.moomken.org" target="_blank" rel="noopener noreferrer">Online Documentation</a>
 
 # Custom ERPNext Docker Deployment
 

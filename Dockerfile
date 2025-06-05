@@ -23,7 +23,7 @@ COPY apps.txt /home/frappe/apps.txt
 COPY backup.sh /home/frappe/backup.sh
 COPY backup.sh /home/frappe/restore.sh
 COPY env.config /home/frappe/env.config
-RUN chmod +x /usr/local/bin/init.sh
-RUN chown frappe:frappe /home/frappe/apps.txt /home/frappe/backup.sh /home/frappe/env.config && chmod +x /home/frappe/backup.sh
+RUN chmod +x /usr/local/bin/init.sh 
+RUN chown frappe:frappe /home/frappe/apps.txt /home/frappe/backup.sh /home/frappe/env.config && chmod +x /home/frappe/backup.sh /home/frappe/restore.sh
 
 ENTRYPOINT ["bash", "/usr/local/bin/init.sh"]
